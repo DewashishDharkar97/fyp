@@ -73,7 +73,7 @@ class StocksEnv(gym.Env):
         retval = None
         cur_value = self.portfolio_value()
         gain = cur_value - self.starting_portfolio_value
-        gain_avg = (apl_open[cur_timestep] - self.state[13]) * self.state[0]
+        gain_avg = (nike_open[cur_timestep] - self.state[13]) * self.state[0]
         
            
         
@@ -104,18 +104,18 @@ class StocksEnv(gym.Env):
 
             else:
                 self.sellcount += 1
-                apl_shares = self.state[0] - action[1]
-                cash_gained = action[1] * apl_open[cur_timestep] * 0.9
-                new_state = [apl_shares , self.state[1] + cash_gained, self.next_opening_price(), \
-                       *self.five_day_window(),self.state[13],self.next_open_price(apl_shares)]
+                nike_shares = self.state[0] - action[1]
+                cash_gained = action[1] * nike_open[cur_timestep] * 0.9
+                new_state = [nike_shares , self.state[1] + cash_gained, self.next_opening_price(), \
+                       *self.five_day_window(),self.state[13],self.next_open_price(nike_shares)]
                 
                 self.state = new_state
-                profit_sell = apl_open[cur_timestep] - self.state[13]
+                profit_sell = nike_open[cur_timestep] - self.state[13]
                 self.ps.append(profit_sell)
                 cur_value = self.portfolio_value()
                 gain = cur_value - self.starting_portfolio_value
                 self.reward += gain_avg
-                retval = np.array(new_state),  gain_avg + (profit_sell * 100) , False, { "msg": "sold AAPL"}
+                retval = np.array(new_state),  gain_avg + (profit_sell * 100) , False, { "msg": "sold ANIKE"}
         
         
         
@@ -129,7 +129,7 @@ class StocksEnv(gym.Env):
         
         if action[0] == 0:
             
-            if action[1] * apl_open[cur_timestep] > self.state[1]:
+            if action[1] * nike_open[cur_timestep] > self.state[1]:
                 new_state = [self.state[0], self.state[1], self.next_opening_price(), \
                          *self.five_day_window(),self.state[13],self.next_open_price(self.state[0])]
                 self.state = new_state
@@ -141,15 +141,15 @@ class StocksEnv(gym.Env):
                 
             else:
                 self.buycount+=1
-                apl_shares = self.state[0] + action[1]
-                cash_spent = action[1] * apl_open[cur_timestep] * 1.1
-                new_state = [apl_shares, self.state[1] - cash_spent, self.next_opening_price(), \
-                        *self.five_day_window(),self.calcAvg(self.state[13],apl_open[cur_timestep]),self.next_open_price(apl_shares)]
+                nike_shares = self.state[0] + action[1]
+                cash_spent = action[1] * nike_open[cur_timestep] * 1.1
+                new_state = [nike_shares, self.state[1] - cash_spent, self.next_opening_price(), \
+                        *self.five_day_window(),self.calcAvg(self.state[13],nike_open[cur_timestep]),self.next_open_price(nike_shares)]
                 self.state = new_state
                 cur_value = self.portfolio_value()
                 gain = cur_value - self.starting_portfolio_value
                 #self.reward += gain_avg
-                retval = np.array(new_state), gain_avg, False, { "msg": "bought AAPL"}
+                retval = np.array(new_state), gain_avg, False, { "msg": "bought ANIKE"}
                 
         
 
@@ -166,10 +166,10 @@ class StocksEnv(gym.Env):
         self.starting_point = self.cur_timestep
         self.state[0] = 10 # random.randint(20,100)
         self.state[1] = 1000 #random.randint(1000,5000)
-        self.state[2] = apl_open[self.cur_timestep]
+        self.state[2] = nike_open[self.cur_timestep]
         self.starting_portfolio_value = self.portfolio_value_states()
         self.state[3:13] = self.five_day_window()
-        self.state[13] = apl_open[self.cur_timestep]
+        self.state[13] = nike_open[self.cur_timestep]
         self.state[14] = self.starting_portfolio_value
         self.buycount=0
         self.sellcount=0
@@ -185,29 +185,29 @@ class StocksEnv(gym.Env):
 
     
     def portfolio_value(self):
-        return (self.state[0] * apl_close[self.cur_timestep])  + self.state[1]
+        return (self.state[0] * nike_close[self.cur_timestep])  + self.state[1]
 
 
     def portfolio_value_states(self):
-        return (self.state[0] * apl_open[self.cur_timestep])  + self.state[1]
+        return (self.state[0] * nike_open[self.cur_timestep])  + self.state[1]
     
     def next_opening_price(self):
         step = self.cur_timestep + self.stride
-        return apl_open[step]
+        return nike_open[step]
         
-    def next_open_price(self,apl_):
+    def next_open_price(self,nike_):
         step = self.cur_timestep + self.stride
-        return (apl_ * apl_open[step])
+        return (nike_ * nike_open[step])
 
     
 
     def five_day_window(self):
         step = self.cur_timestep
         if step < 5:
-            return apl_open[0]
-        apl5 = apl_open[step-5:step].mean()
+            return nike_open[0]
+        nike5 = nike_open[step-5:step].mean()
         
-        return apl_open[step-10:step]
+        return nike_open[step-10:step]
     
     def calcAvg(self,prev,new):
         return ((prev*self.state[0])+new)/(self.state[0]+1)
@@ -216,7 +216,7 @@ class StocksEnv(gym.Env):
         return 0 #self.state[0]/10
     
     def netprof(self):
-        return  (apl_open[self.cur_timestep] - self.state[13]) * self.state[0]
+        return  (nike_open[self.cur_timestep] - self.state[13]) * self.state[0]
     
     def render(self, mode='human'):
         print("Render called")
